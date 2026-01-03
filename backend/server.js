@@ -16,6 +16,10 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging middleware (for debugging)
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`, req.body.email ? `- Email: ${req.body.email}` : '');
+  // Log 404s to help debug missing routes
+  if (req.path.includes('/status') || req.path.includes('/attendance')) {
+    console.log(`📍 Attendance route requested: ${req.method} ${req.path}`);
+  }
   next();
 });
 
@@ -31,10 +35,8 @@ if (process.env.MONGO_URI && !process.env.MONGODB_URI) {
   console.warn('⚠️  WARNING: Using MONGO_URI. Please update to MONGODB_URI in .env file');
 }
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// Remove deprecated options (they're not needed in newer Mongoose versions)
+mongoose.connect(MONGODB_URI)
 .then(() => {
   console.log('✅ MongoDB connected successfully');
   console.log('📊 Database Name:', mongoose.connection.name);
@@ -46,16 +48,36 @@ mongoose.connect(MONGODB_URI, {
   console.error('❌ MongoDB connection error:', err.message);
   console.error('💡 Make sure your MongoDB Atlas connection string is correct in .env file');
   console.error('💡 Format: mongodb+srv://username:password@cluster.mongodb.net/hackthon?retryWrites=true&w=majority');
-  process.exit(1);
+  console.error('💡 If using local MongoDB, make sure MongoDB service is running');
+  // Don't exit immediately - allow server to start but log the error
+  // process.exit(1);
 });
 
 // Handle connection events
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connection established');
+});
+
 mongoose.connection.on('disconnected', () => {
-  console.log('⚠️ MongoDB disconnected');
+  console.log('⚠️ MongoDB disconnected - operations will buffer until reconnected');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('❌ MongoDB error:', err);
+  console.error('❌ MongoDB connection error:', err.message);
+  console.error('💡 Check your MongoDB connection string and network connectivity');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected successfully');
+});
+
+// MongoDB connection check middleware (optional - doesn't block requests but logs warnings)
+app.use((req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.warn(`⚠️  MongoDB not connected (state: ${mongoose.connection.readyState}) for ${req.method} ${req.path}`);
+    console.warn('💡 Operations will buffer until connection is established');
+  }
+  next();
 });
 
 // API Routes

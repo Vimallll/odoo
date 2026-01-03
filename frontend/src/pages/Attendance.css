@@ -77,9 +77,23 @@
 }
 
 .btn-checkin:disabled,
-.btn-checkout:disabled {
-  opacity: 0.5;
+.btn-checkout:disabled,
+.btn-checkin.btn-disabled,
+.btn-checkout.btn-disabled {
+  opacity: 0.4;
   cursor: not-allowed;
+  background: #ccc !important;
+  color: #666 !important;
+}
+
+.btn-checkin.btn-disabled {
+  background: #d4edda !important;
+  color: #6c757d !important;
+}
+
+.btn-checkout.btn-disabled {
+  background: #f8d7da !important;
+  color: #6c757d !important;
 }
 
 .attendance-filters {
@@ -176,9 +190,244 @@ td {
 
 .message {
   padding: 12px;
-  background: #d4edda;
-  color: #155724;
   border-radius: 8px;
   margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* Month Navigation and Summary Stats */
+.attendance-month-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.month-navigation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-arrow-btn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.3s;
+}
+
+.nav-arrow-btn:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+}
+
+.month-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.month-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.summary-stats {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.stat-box {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  text-align: center;
+}
+
+.stat-box h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.stat-box p {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.current-date-display {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.message-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.working-hours-display {
+  font-size: 18px;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.overtime-badge {
+  color: #ff6b35;
+  font-weight: 600;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.overtime-badge-small {
+  color: #ff6b35;
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.live-hours {
+  background: #f0f8ff;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #007bff;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: #28a745;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+/* Overtime Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.modal-content p {
+  margin: 0 0 15px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.modal-hours {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 15px 0 !important;
+  font-size: 14px;
+}
+
+.modal-hours strong {
+  color: #28a745;
+  font-size: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-overtime-continue,
+.btn-overtime-checkout {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-overtime-continue {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-overtime-continue:hover {
+  background: #e55a2b;
+}
+
+.btn-overtime-checkout {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-overtime-checkout:hover {
+  background: #5a6268;
 }
 

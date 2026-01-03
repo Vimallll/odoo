@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import Layout from '../../components/Layout';
+import EmployeeStatus from '../../components/EmployeeStatus';
 import './Admin.css';
 
 const Employees = () => {
@@ -191,6 +192,7 @@ const Employees = () => {
               <tr>
                 <th>Employee ID</th>
                 <th>Name</th>
+                <th>Status</th>
                 <th>Email</th>
                 <th>Department</th>
                 <th>Position</th>
@@ -200,7 +202,7 @@ const Employees = () => {
             <tbody>
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="no-data">No employees found</td>
+                  <td colSpan="7" className="no-data">No employees found</td>
                 </tr>
               ) : (
                 employees.map((employee) => (
@@ -208,6 +210,9 @@ const Employees = () => {
                     <td>{employee.employeeId}</td>
                     <td>
                       {employee.profile?.firstName} {employee.profile?.lastName}
+                    </td>
+                    <td>
+                      <EmployeeStatus employeeId={employee._id} size="small" />
                     </td>
                     <td>{employee.email}</td>
                     <td>{employee.profile?.department || '-'}</td>

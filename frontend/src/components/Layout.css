@@ -72,8 +72,16 @@
   color: white;
 }
 
-.btn-checkin:hover {
+.btn-checkin:hover:not(:disabled) {
   background: #218838;
+}
+
+.btn-checkin:disabled,
+.btn-checkin.btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #d4edda !important;
+  color: #6c757d !important;
 }
 
 .btn-checkout {
@@ -97,9 +105,47 @@
   box-shadow: 0 0 0 2px #28a745;
 }
 
+.status-indicator.checked-in.pulse {
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
 .status-indicator.checked-out {
   background: #dc3545;
   box-shadow: 0 0 0 2px #dc3545;
+}
+
+.hours-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.hours-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #28a745;
+  white-space: nowrap;
+}
+
+.overtime-badge-nav {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ff6b35;
+  white-space: nowrap;
 }
 
 .user-avatar-dropdown {
@@ -181,6 +227,90 @@
   margin: 0 auto;
 }
 
+/* Overtime Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.modal-content p {
+  margin: 0 0 15px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.modal-hours {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 15px 0 !important;
+  font-size: 14px;
+}
+
+.modal-hours strong {
+  color: #28a745;
+  font-size: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-overtime-continue,
+.btn-overtime-checkout {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-overtime-continue {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-overtime-continue:hover {
+  background: #e55a2b;
+}
+
+.btn-overtime-checkout {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-overtime-checkout:hover {
+  background: #5a6268;
+}
+
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
@@ -196,6 +326,11 @@
 
   .main-content {
     padding: 15px;
+  }
+
+  .hours-display {
+    margin-right: 0;
+    margin-bottom: 8px;
   }
 }
 
