@@ -1,0 +1,184 @@
+.attendance h1 {
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.check-in-out {
+  margin-bottom: 30px;
+}
+
+.check-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.check-card h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.attendance-status {
+  margin-bottom: 20px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.status-item label {
+  color: #666;
+  font-weight: 500;
+}
+
+.status-item p {
+  color: #333;
+  font-weight: 600;
+  margin: 0;
+}
+
+.check-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-checkin,
+.btn-checkout {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-checkin {
+  background: #28a745;
+  color: white;
+}
+
+.btn-checkin:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-checkout {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-checkout:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-checkin:disabled,
+.btn-checkout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attendance-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.filter-group input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.attendance-table {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f8f9fa;
+}
+
+th {
+  padding: 15px;
+  text-align: left;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 15px;
+  border-top: 1px solid #f0f0f0;
+  color: #666;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-present {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-absent {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-halfday {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-leave {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.no-data {
+  text-align: center;
+  color: #999;
+  padding: 30px !important;
+}
+
+.message {
+  padding: 12px;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+

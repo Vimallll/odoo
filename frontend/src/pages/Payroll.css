@@ -1,0 +1,158 @@
+.payroll h1 {
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.payroll-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.filter-group select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.payroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.payroll-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payroll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.payroll-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.payroll-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.detail-row span:first-child {
+  color: #666;
+  font-size: 14px;
+}
+
+.detail-row span:last-child {
+  color: #333;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.positive {
+  color: #28a745 !important;
+}
+
+.negative {
+  color: #dc3545 !important;
+}
+
+.net-salary {
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.net-salary span:first-child {
+  color: #333;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.net-salary span:last-child {
+  color: #667eea;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.payslip-link {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.payslip-link a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.payslip-link a:hover {
+  text-decoration: underline;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-processed {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.no-data {
+  text-align: center;
+  padding: 50px;
+  color: #999;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+

@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "generate-secret": "node generate-secret.js",
+    "setup-env": "node setup-env.js",
+    "check-env": "node check-env.js"
   },
   "keywords": ["express", "mongodb", "backend"],
   "author": "",
