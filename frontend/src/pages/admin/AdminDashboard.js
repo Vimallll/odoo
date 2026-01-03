@@ -4,6 +4,7 @@ import api from '../../utils/api';
 import Layout from '../../components/Layout';
 import KPICard from '../../components/KPICard';
 import { KPICardSkeleton, TableSkeleton } from '../../components/LoadingSkeleton';
+import { Users, CheckCircle2, FileText, DollarSign, ArrowRight, User } from 'lucide-react';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -70,14 +71,14 @@ const AdminDashboard = () => {
             title="Total Employees"
             value={stats?.totalEmployees || 0}
             change="active employees"
-            icon="👥"
+            icon={<Users size={24} />}
             color="primary"
           />
           <KPICard
             title="Today's Attendance"
             value={stats?.todayAttendance || 0}
             change={`${stats?.totalEmployees ? Math.round((stats.todayAttendance / stats.totalEmployees) * 100) : 0}% present`}
-            icon="✅"
+            icon={<CheckCircle2 size={24} />}
             color="success"
             trend="up"
           />
@@ -85,14 +86,14 @@ const AdminDashboard = () => {
             title="Pending Leaves"
             value={stats?.pendingLeaves || 0}
             change="awaiting approval"
-            icon="📋"
+            icon={<FileText size={24} />}
             color="warning"
           />
           <KPICard
             title="This Month Payroll"
             value={stats?.monthlyPayroll || 0}
             change="processed"
-            icon="💰"
+            icon={<DollarSign size={24} />}
             color="info"
           />
         </div>
@@ -102,57 +103,69 @@ const AdminDashboard = () => {
           <h2 className="section-title">Quick Actions</h2>
           <div className="quick-actions-grid">
             <Link to="/admin/employee-cards" className="action-card">
-              <div className="action-icon">👥</div>
+              <div className="action-icon">
+                <Users size={28} />
+              </div>
               <div className="action-content">
                 <h3>Employee Cards</h3>
                 <p>View all employees in card view</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/admin/employees" className="action-card">
-              <div className="action-icon">👤</div>
+              <div className="action-icon">
+                <User size={28} />
+              </div>
               <div className="action-content">
                 <h3>Manage Employees</h3>
                 <p>Edit and manage employee data</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/admin/attendance" className="action-card">
-              <div className="action-icon">⏰</div>
+              <div className="action-icon">
+                <CheckCircle2 size={28} />
+              </div>
               <div className="action-content">
                 <h3>Attendance</h3>
                 <p>View all attendance records</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/admin/leaves" className="action-card">
-              <div className="action-icon">🏖️</div>
+              <div className="action-icon">
+                <FileText size={28} />
+              </div>
               <div className="action-content">
                 <h3>Leave Requests</h3>
                 <p>Approve or reject leaves</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/admin/payroll" className="action-card">
-              <div className="action-icon">💰</div>
+              <div className="action-icon">
+                <DollarSign size={28} />
+              </div>
               <div className="action-content">
                 <h3>Payroll</h3>
                 <p>Manage payroll and salaries</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/admin/reports" className="action-card">
-              <div className="action-icon">📊</div>
+              <div className="action-icon">
+                <FileText size={28} />
+              </div>
               <div className="action-content">
                 <h3>Reports</h3>
                 <p>View analytics and reports</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
           </div>
         </div>

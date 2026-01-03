@@ -4,6 +4,7 @@ import api from '../utils/api';
 import Layout from '../components/Layout';
 import KPICard from '../components/KPICard';
 import { KPICardSkeleton } from '../components/LoadingSkeleton';
+import { Clock, Calendar, TrendingUp, FileText, User, ArrowRight, CheckCircle2, XCircle, Clock as ClockIcon } from 'lucide-react';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -88,27 +89,27 @@ const Dashboard = () => {
           <KPICard
             title="Attendance Status"
             value={getAttendanceStatus()}
-            icon="⏰"
+            icon={<Clock size={24} />}
             color="primary"
           />
           <KPICard
             title="Paid Leave Balance"
             value={leaveBalance.paid}
             change="days remaining"
-            icon="🏖️"
+            icon={<Calendar size={24} />}
             color="success"
           />
           <KPICard
             title="Sick Leave Balance"
             value={leaveBalance.sick}
             change="days remaining"
-            icon="🏥"
+            icon={<TrendingUp size={24} />}
             color="warning"
           />
           <KPICard
             title="Pending Leaves"
             value={stats?.pendingLeaves || 0}
-            icon="📋"
+            icon={<FileText size={24} />}
             color="info"
           />
         </div>
@@ -118,39 +119,47 @@ const Dashboard = () => {
           <h2 className="section-title">Quick Actions</h2>
           <div className="quick-actions-grid">
             <Link to="/profile" className="action-card">
-              <div className="action-icon">👤</div>
+              <div className="action-icon">
+                <User size={28} />
+              </div>
               <div className="action-content">
                 <h3>My Profile</h3>
                 <p>View and edit your profile information</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/attendance" className="action-card">
-              <div className="action-icon">⏰</div>
+              <div className="action-icon">
+                <ClockIcon size={28} />
+              </div>
               <div className="action-content">
                 <h3>Attendance</h3>
                 <p>Check in/out and view attendance records</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/leaves" className="action-card">
-              <div className="action-icon">🏖️</div>
+              <div className="action-icon">
+                <Calendar size={28} />
+              </div>
               <div className="action-content">
                 <h3>Leave Requests</h3>
                 <p>Apply for leave and track your requests</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
 
             <Link to="/payroll" className="action-card">
-              <div className="action-icon">💰</div>
+              <div className="action-icon">
+                <FileText size={28} />
+              </div>
               <div className="action-content">
                 <h3>Payroll</h3>
                 <p>View salary details and download payslips</p>
               </div>
-              <div className="action-arrow">→</div>
+              <ArrowRight size={20} className="action-arrow" />
             </Link>
           </div>
         </div>
@@ -167,12 +176,15 @@ const Dashboard = () => {
                     {index < stats.recentLeaves.length - 1 && <div className="timeline-line"></div>}
                   </div>
                   <div className="timeline-content">
-                    <div className="timeline-header">
-                      <h4>{leave.leaveType} Leave Request</h4>
-                      <span className={`badge badge-${leave.status.toLowerCase()}`}>
-                        {leave.status}
-                      </span>
-                    </div>
+                  <div className="timeline-header">
+                    <h4>{leave.leaveType} Leave Request</h4>
+                    <span className={`badge badge-${leave.status.toLowerCase()}`}>
+                      {leave.status === 'Approved' && <CheckCircle2 size={12} />}
+                      {leave.status === 'Rejected' && <XCircle size={12} />}
+                      {leave.status === 'Pending' && <ClockIcon size={12} />}
+                      {leave.status}
+                    </span>
+                  </div>
                     <p className="timeline-date">
                       {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
                     </p>

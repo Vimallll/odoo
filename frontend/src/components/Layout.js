@@ -1,16 +1,24 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/api';
+import { 
+  LayoutDashboard, Home, Users, Clock, Calendar, DollarSign, FileText, 
+  Settings, LogOut, Menu, X, Bell, ChevronDown, User, CheckCircle2, 
+  XCircle, AlertCircle
+} from 'lucide-react';
 import './Layout.css';
 
 const Layout = ({ children }) => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(null);
   const [showOvertimeModal, setShowOvertimeModal] = useState(false);
   const [overtimeConfirmed, setOvertimeConfirmed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const intervalRef = useRef(null);
   const autoCheckoutRef = useRef(null);
@@ -161,103 +169,192 @@ const Layout = ({ children }) => {
 
   const isAdmin = user?.role === 'HR' || user?.role === 'Admin';
 
+  const isActive = (path) => location.pathname === path;
+
+  const sidebarMenuItems = isAdmin ? [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/admin/employees', label: 'Employees', icon: Users },
+    { path: '/admin/attendance', label: 'Attendance', icon: Clock },
+    { path: '/admin/leaves', label: 'Leave Requests', icon: Calendar },
+    { path: '/admin/payroll', label: 'Payroll', icon: DollarSign },
+    { path: '/admin/reports', label: 'Reports', icon: FileText },
+  ] : [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/profile', label: 'Profile', icon: User },
+    { path: '/attendance', label: 'Attendance', icon: Clock },
+    { path: '/leaves', label: 'Leave Requests', icon: Calendar },
+    { path: '/payroll', label: 'Payroll', icon: DollarSign },
+  ];
+
   return (
-    <div className="layout">
-      <nav className="navbar">
-        <div className="nav-brand">
-          <Link to={isAdmin ? '/admin/dashboard' : '/dashboard'}>
-            <h2>Dayflow</h2>
+    <div className={`layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <Link to={isAdmin ? '/admin/dashboard' : '/dashboard'} className="sidebar-brand">
+            <div className="brand-icon">D</div>
+            {!sidebarCollapsed && <span className="brand-text">Dayflow</span>}
           </Link>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            aria-label="Toggle sidebar"
+          >
+            {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
+          </button>
         </div>
-        <div className="nav-links">
-          {isAdmin ? (
-            <>
-              <Link to="/admin/dashboard">Dashboard</Link>
-              <Link to="/admin/employees">Employees</Link>
-              <Link to="/admin/attendance">Attendance</Link>
-              <Link to="/admin/leaves">Leave Requests</Link>
-              <Link to="/admin/payroll">Payroll</Link>
-              <Link to="/admin/reports">Reports</Link>
-            </>
-          ) : (
-            <>
-              <Link to="/dashboard">Dashboard</Link>
-              <Link to="/profile">Profile</Link>
-              <Link to="/attendance">Attendance</Link>
-              <Link to="/leaves">Leave Requests</Link>
-              <Link to="/payroll">Payroll</Link>
-            </>
-          )}
-        </div>
-        <div className="nav-user">
-          {!isAdmin && (
-            <div className="check-in-out">
-              {currentStatus?.checkedIn && !currentStatus?.checkedOut ? (
-                <>
-                  <div className="hours-display">
-                    <span className="hours-text">{formatHours(getCurrentWorkingHours())}</span>
-                    {currentStatus.overtime && currentStatus.overtimeHours > 0 && (
-                      <span className="overtime-badge-nav">OT: {formatHours(currentStatus.overtimeHours)}</span>
-                    )}
+
+        <nav className="sidebar-nav">
+          {sidebarMenuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Icon size={20} className="sidebar-icon" />
+                {!sidebarCollapsed && <span className="sidebar-label">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-footer">
+          {!sidebarCollapsed && (
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-avatar">
+                {user?.profile?.profilePicture ? (
+                  <img src={user.profile.profilePicture} alt="Avatar" />
+                ) : (
+                  <div className="avatar-placeholder-small">
+                    {user?.profile?.firstName?.[0] || user?.email?.[0] || 'U'}
                   </div>
-                  <button 
-                    onClick={() => {
-                      const now = new Date();
-                      const isAfter6PM = now.getHours() >= 18;
-                      // Show overtime modal only if after 6 PM and overtime not confirmed
-                      // Otherwise, allow checkout at any time (mid-day checkout is allowed)
-                      if (isAfter6PM && !overtimeConfirmed) {
-                        setShowOvertimeModal(true);
-                      } else {
-                        // Checkout immediately (mid-day or after overtime confirmation)
-                        handleCheckOut(isAfter6PM && overtimeConfirmed);
-                      }
-                    }} 
-                    className="btn-checkout"
-                    title="Click to check out (available at any time)"
-                  >
-                    Check Out
-                  </button>
-                  <span className="status-indicator checked-in pulse"></span>
-                </>
-              ) : (
-                <>
-                  <button 
-                    onClick={handleCheckIn} 
-                    className={`btn-checkin ${currentStatus?.checkedIn ? 'btn-disabled' : ''}`}
-                    disabled={currentStatus?.checkedIn}
-                  >
-                    {currentStatus?.checkedIn ? 'Checked In' : 'Check In'}
-                  </button>
-                  <span className="status-indicator checked-out"></span>
-                </>
-              )}
+                )}
+              </div>
+              <div className="sidebar-user-details">
+                <div className="sidebar-user-name">
+                  {user?.profile?.firstName} {user?.profile?.lastName}
+                </div>
+                <div className="sidebar-user-role">{user?.role}</div>
+              </div>
             </div>
           )}
-          <div className="user-avatar-dropdown" ref={dropdownRef}>
-            <div
-              className="avatar-container"
-              onClick={() => setShowDropdown(!showDropdown)}
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="main-wrapper">
+        {/* Top Bar */}
+        <header className="topbar">
+          <div className="topbar-left">
+            <button 
+              className="mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
             >
-              {user?.profile?.profilePicture ? (
-                <img src={user.profile.profilePicture} alt="Avatar" className="avatar-img" />
-              ) : (
-                <div className="avatar-placeholder">
-                  {user?.profile?.firstName?.[0] || user?.email?.[0] || 'U'}
-                </div>
-              )}
+              <Menu size={24} />
+            </button>
+            <div className="topbar-title">
+              {sidebarMenuItems.find(item => isActive(item.path))?.label || 'Dashboard'}
             </div>
-            {showDropdown && (
-              <div className="dropdown-menu">
-                <Link to="/profile" onClick={() => setShowDropdown(false)}>
-                  My Profile
-                </Link>
-                <button onClick={handleLogout}>Log Out</button>
+          </div>
+
+          <div className="topbar-right">
+            {!isAdmin && (
+              <div className="check-in-out-topbar">
+                {currentStatus?.checkedIn && !currentStatus?.checkedOut ? (
+                  <div className="check-status-group">
+                    <div className="hours-display-topbar">
+                      <span className="hours-text-topbar">{formatHours(getCurrentWorkingHours())}</span>
+                      {currentStatus.overtime && currentStatus.overtimeHours > 0 && (
+                        <span className="overtime-badge-topbar">OT: {formatHours(currentStatus.overtimeHours)}</span>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const now = new Date();
+                        const isAfter6PM = now.getHours() >= 18;
+                        if (isAfter6PM && !overtimeConfirmed) {
+                          setShowOvertimeModal(true);
+                        } else {
+                          handleCheckOut(isAfter6PM && overtimeConfirmed);
+                        }
+                      }} 
+                      className="btn-checkout-topbar"
+                      title="Check out"
+                    >
+                      <XCircle size={16} />
+                      Check Out
+                    </button>
+                    <span className="status-indicator-topbar checked-in pulse"></span>
+                  </div>
+                ) : (
+                  <div className="check-status-group">
+                    <button 
+                      onClick={handleCheckIn} 
+                      className={`btn-checkin-topbar ${currentStatus?.checkedIn ? 'btn-disabled' : ''}`}
+                      disabled={currentStatus?.checkedIn}
+                    >
+                      <CheckCircle2 size={16} />
+                      {currentStatus?.checkedIn ? 'Checked In' : 'Check In'}
+                    </button>
+                    <span className="status-indicator-topbar checked-out"></span>
+                  </div>
+                )}
               </div>
             )}
+
+            <div className="topbar-actions">
+              <button className="topbar-icon-btn" aria-label="Notifications">
+                <Bell size={20} />
+                <span className="notification-badge">3</span>
+              </button>
+
+              <div className="user-dropdown" ref={dropdownRef}>
+                <button
+                  className="user-dropdown-trigger"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <div className="user-avatar-small">
+                    {user?.profile?.profilePicture ? (
+                      <img src={user.profile.profilePicture} alt="Avatar" />
+                    ) : (
+                      <div className="avatar-placeholder-small">
+                        {user?.profile?.firstName?.[0] || user?.email?.[0] || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="user-info-small">
+                    <div className="user-name-small">
+                      {user?.profile?.firstName} {user?.profile?.lastName}
+                    </div>
+                    <div className="user-role-small">{user?.role}</div>
+                  </div>
+                  <ChevronDown size={16} className={`dropdown-arrow ${showDropdown ? 'open' : ''}`} />
+                </button>
+                {showDropdown && (
+                  <div className="dropdown-menu-modern">
+                    <Link to="/profile" onClick={() => setShowDropdown(false)} className="dropdown-item">
+                      <User size={16} />
+                      <span>My Profile</span>
+                    </Link>
+                    <Link to="/profile" onClick={() => setShowDropdown(false)} className="dropdown-item">
+                      <Settings size={16} />
+                      <span>Settings</span>
+                    </Link>
+                    <div className="dropdown-divider"></div>
+                    <button onClick={handleLogout} className="dropdown-item danger">
+                      <LogOut size={16} />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
+        </header>
       
       {/* Overtime Modal */}
       {showOvertimeModal && (
@@ -281,7 +378,44 @@ const Layout = ({ children }) => {
         </div>
       )}
 
-      <main className="main-content">{children}</main>
+        {/* Main Content */}
+        <main className="main-content">{children}</main>
+      </div>
+
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
+
+      {/* Overtime Modal */}
+      {showOvertimeModal && (
+        <div className="modal-overlay" onClick={() => setShowOvertimeModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <AlertCircle size={24} className="modal-icon" />
+              <h3>Office Hours Ended</h3>
+            </div>
+            <div className="modal-body">
+              <p>It's past 6 PM (Office hours: 9 AM - 6 PM).</p>
+              {currentStatus?.currentHours && (
+                <div className="modal-hours">
+                  <span className="modal-hours-label">Current working hours:</span>
+                  <strong>{formatHours(currentStatus.currentHours)}</strong>
+                </div>
+              )}
+              <p>Would you like to:</p>
+            </div>
+            <div className="modal-actions">
+              <button onClick={handleOvertimeContinue} className="btn btn-secondary">
+                Continue Working (Overtime)
+              </button>
+              <button onClick={handleOvertimeCheckout} className="btn btn-primary">
+                Check Out Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
