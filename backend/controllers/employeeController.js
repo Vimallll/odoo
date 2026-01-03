@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Attendance = require('../models/Attendance');
+const Leave = require('../models/Leave');
 
 // Get all employees (Admin/HR only)
 exports.getAllEmployees = async (req, res) => {
@@ -189,6 +191,84 @@ exports.updateEmployee = async (req, res) => {
       error: error.message || 'Server error',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  }
+};
+
+// Get employee status (checked in, on leave, absent)
+exports.getEmployeeStatus = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Check if employee is checked in today
+    const attendance = await Attendance.findOne({
+      employeeId,
+      date: today
+    });
+    
+    // Check if employee is on leave today
+    const leave = await Leave.findOne({
+      employeeId,
+      status: 'Approved',
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    });
+    
+    const isOnLeave = !!leave;
+    
+    // Determine status - check checked-out FIRST, then checked-in
+    let status = 'absent'; // Default: absent
+    let statusText = 'Absent';
+    
+    if (attendance) {
+      // Priority 1: Check if user has checked out (has both checkIn and checkOut)
+      if (attendance.checkIn?.time && attendance.checkOut?.time) {
+        status = 'checked-out';
+        statusText = 'Checked Out';
+      }
+      // Priority 2: Check if user is checked in (has checkIn but no checkOut)
+      else if (attendance.checkIn?.time && !attendance.checkOut?.time) {
+        status = 'checked-in';
+        statusText = 'Checked In';
+      }
+      // Priority 3: Check if marked as leave in attendance
+      else if (attendance.status === 'Leave') {
+        status = 'on-leave';
+        statusText = 'On Leave';
+      }
+      // Otherwise absent
+      else {
+        status = 'absent';
+        statusText = 'Absent';
+      }
+    }
+    
+    // Override with leave status if on approved leave (unless already checked out)
+    if (isOnLeave && status !== 'checked-out') {
+      status = 'on-leave';
+      statusText = 'On Leave';
+    }
+    
+    res.json({
+      status,
+      statusText,
+      isCheckedIn,
+      isOnLeave,
+      attendance: attendance ? {
+        checkIn: attendance.checkIn?.time,
+        checkOut: attendance.checkOut?.time,
+        workingHours: attendance.workingHours
+      } : null,
+      leave: leave ? {
+        leaveType: leave.leaveType,
+        startDate: leave.startDate,
+        endDate: leave.endDate
+      } : null
+    });
+  } catch (error) {
+    console.error('Error getting employee status:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

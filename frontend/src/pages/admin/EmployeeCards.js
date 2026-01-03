@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import Layout from '../../components/Layout';
+import EmployeeStatus from '../../components/EmployeeStatus';
 import './EmployeeCards.css';
 
 const EmployeeCards = () => {
@@ -272,7 +273,7 @@ const EmployeeCards = () => {
                     )}
                   </div>
                   <div className="employee-status">
-                    <span className={`status-dot ${employee.isActive ? 'active' : 'inactive'}`}></span>
+                    <EmployeeStatus employeeId={employee._id} size="small" />
                   </div>
                 </div>
                 <div className="card-body">

@@ -4,6 +4,7 @@ import api from '../utils/api';
 import Layout from '../components/Layout';
 import { AuthContext } from '../context/AuthContext';
 import { calculateProfileCompletion, getMissingFields } from '../utils/profileCompletion';
+import EmployeeStatus from '../components/EmployeeStatus';
 import './TabbedProfile.css';
 
 // Format currency in Indian Rupees
@@ -415,7 +416,12 @@ const TabbedProfile = () => {
             )}
           </div>
           <div className="profile-header-info">
-            <h1>{profile?.profile?.firstName || ''} {profile?.profile?.lastName || ''}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+              <h1 style={{ margin: 0 }}>{profile?.profile?.firstName || ''} {profile?.profile?.lastName || ''}</h1>
+              {isAdminOrHR && profile?._id && (
+                <EmployeeStatus employeeId={profile._id} size="large" />
+              )}
+            </div>
             <p className="employee-id-display">Employee ID: {profile?.employeeId}</p>
             {isAdmin && <p className="admin-badge">Admin View</p>}
             {isHR && !isAdmin && <p className="hr-badge">HR View</p>}
