@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const { startCleanupScheduler } = require('./utils/cleanupUnverifiedUsers');
 
 const app = express();
 
@@ -13,49 +14,76 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware (for debugging)
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`, req.body.email ? `- Email: ${req.body.email}` : '');
-  next();
-});
+// Request logging middleware removed for cleaner output
 
 // MongoDB connection
 // Support both MONGO_URI and MONGODB_URI for compatibility
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/hackthon';
-
-console.log('🔗 Connecting to MongoDB...');
-console.log('📍 Connection URI:', MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')); // Hide credentials in logs
 
 // Warn if using deprecated variable name
 if (process.env.MONGO_URI && !process.env.MONGODB_URI) {
   console.warn('⚠️  WARNING: Using MONGO_URI. Please update to MONGODB_URI in .env file');
 }
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('✅ MongoDB connected successfully');
-  console.log('📊 Database Name:', mongoose.connection.name);
-  console.log('🌐 Host:', mongoose.connection.host);
-  console.log('🔌 Port:', mongoose.connection.port);
-  console.log('📝 Ready State:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
-})
-.catch((err) => {
-  console.error('❌ MongoDB connection error:', err.message);
-  console.error('💡 Make sure your MongoDB Atlas connection string is correct in .env file');
-  console.error('💡 Format: mongodb+srv://username:password@cluster.mongodb.net/hackthon?retryWrites=true&w=majority');
-  process.exit(1);
-});
+// Retry connection logic
+let retryCount = 0;
+const maxRetries = 5;
+
+const connectWithRetry = () => {
+  mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000, // 10 seconds
+    socketTimeoutMS: 45000,
+  })
+  .then(() => {
+    console.log('✅ MongoDB connected successfully');
+    retryCount = 0; // Reset retry count on success
+  })
+  .catch((err) => {
+    retryCount++;
+    console.error(`❌ MongoDB connection error (Attempt ${retryCount}/${maxRetries}):`, err.message);
+    
+    // Provide specific solutions based on error type
+    if (err.message.includes('ENOTFOUND')) {
+      console.error('   🔧 DNS Resolution Error:');
+      console.error('      1. Check if your MongoDB Atlas cluster is running (not paused)');
+      console.error('      2. Verify your internet connection');
+      console.error('      3. Try accessing MongoDB Atlas dashboard to check cluster status');
+    } else if (err.message.includes('authentication')) {
+      console.error('   🔧 Authentication Error:');
+      console.error('      1. Verify username and password in connection string');
+      console.error('      2. Check Database Access in MongoDB Atlas');
+    } else if (err.message.includes('timeout')) {
+      console.error('   🔧 Connection Timeout:');
+      console.error('      1. Check Network Access IP whitelist in MongoDB Atlas');
+      console.error('      2. Add your IP address or use 0.0.0.0/0 for development');
+    }
+    
+    if (retryCount < maxRetries) {
+      setTimeout(connectWithRetry, 5000);
+    } else {
+      console.error('   ❌ Max retries reached. Please check your MongoDB connection.');
+      console.error('   💡 Run: node check-mongodb-connection.js to diagnose the issue');
+      // Don't exit - allow server to start and handle requests
+      // The connection will retry automatically on disconnect
+    }
+  });
+};
+
+// Start connection
+connectWithRetry();
 
 // Handle connection events
 mongoose.connection.on('disconnected', () => {
-  console.log('⚠️ MongoDB disconnected');
+  retryCount = 0; // Reset retry count on disconnect
+  setTimeout(connectWithRetry, 5000);
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('❌ MongoDB error:', err);
+  console.error('❌ MongoDB error:', err.message);
+});
+
+mongoose.connection.on('reconnected', () => {
+  // MongoDB reconnected
 });
 
 // API Routes
@@ -69,7 +97,7 @@ app.use('/api/test', require('./routes/testRoutes')); // Test routes for debuggi
 
 // Basic route
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Dayflow HRMS API - Every workday, perfectly aligned.' });
+  res.json({ message: 'Welcome to Emporia HRMS API - Every workday, perfectly aligned.' });
 });
 
 // Health check
@@ -92,7 +120,6 @@ app.get('/api/test', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.stack);
   res.status(500).json({ 
     error: err.message || 'Something went wrong!',
     details: process.env.NODE_ENV === 'development' ? err.stack : undefined
@@ -104,9 +131,12 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+// Start cleanup scheduler
+startCleanupScheduler();
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Dayflow HRMS Server is running on port ${PORT}`);
+  // Server started
 });
 

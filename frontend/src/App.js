@@ -4,6 +4,10 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ResetPasswordOTP from './pages/ResetPasswordOTP';
+import VerifyEmailOTP from './pages/VerifyEmailOTP';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import TabbedProfile from './pages/TabbedProfile';
@@ -26,6 +30,9 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/signup" element={!user ? <SignUp /> : <Navigate to={user.role === 'Employee' ? '/dashboard' : '/admin/dashboard'} />} />
       <Route path="/signin" element={!user ? <SignIn /> : <Navigate to={user.role === 'Employee' ? '/dashboard' : '/admin/dashboard'} />} />
+      <Route path="/verify-email-otp" element={!user ? <VerifyEmailOTP /> : <Navigate to={user.role === 'Employee' ? '/dashboard' : '/admin/dashboard'} />} />
+      <Route path="/forgot-password" element={!user ? <ForgotPassword /> : <Navigate to={user.role === 'Employee' ? '/dashboard' : '/admin/dashboard'} />} />
+      <Route path="/reset-password" element={!user ? <ResetPasswordOTP /> : <Navigate to={user.role === 'Employee' ? '/dashboard' : '/admin/dashboard'} />} />
       
       <Route path="/dashboard" element={
         <PrivateRoute>
@@ -75,7 +82,7 @@ const AppRoutes = () => {
       } />
       <Route path="/admin/employees/:id" element={
         <PrivateRoute allowedRoles={['HR', 'Admin']}>
-          <Profile />
+          <TabbedProfile />
         </PrivateRoute>
       } />
       <Route path="/admin/attendance" element={

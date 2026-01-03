@@ -6,6 +6,12 @@ import { AuthContext } from '../context/AuthContext';
 import { calculateProfileCompletion, getMissingFields } from '../utils/profileCompletion';
 import './TabbedProfile.css';
 
+// Format currency in Indian Rupees
+const formatCurrency = (amount) => {
+  if (!amount && amount !== 0) return '₹0';
+  return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+};
+
 const TabbedProfile = () => {
   const { id } = useParams();
   const { user: currentUser } = useContext(AuthContext);
@@ -60,7 +66,16 @@ const TabbedProfile = () => {
   const fetchProfile = async () => {
     try {
       const employeeId = id || currentUser._id;
+      console.log('🔍 Fetching profile for employee ID:', employeeId, 'URL param id:', id);
       const response = await api.get(`/employees/${employeeId}`);
+      console.log('✅ Profile data received:', {
+        email: response.data.email,
+        department: response.data.profile?.department,
+        position: response.data.profile?.position,
+        joiningDate: response.data.profile?.joiningDate,
+        baseSalary: response.data.salary?.baseSalary,
+        netSalary: response.data.salary?.netSalary
+      });
       setProfile(response.data);
       
       // Calculate profile completion
@@ -85,6 +100,11 @@ const TabbedProfile = () => {
         employeeId: response.data.employeeId || '',
         role: response.data.role || '',
         profilePicture: response.data.profile?.profilePicture || '',
+        about: response.data.profile?.about || '',
+        whatILoveAboutMyJob: response.data.profile?.whatILoveAboutMyJob || '',
+        interestsAndHobbies: response.data.profile?.interestsAndHobbies || '',
+        skills: response.data.profile?.skills || [],
+        certifications: response.data.profile?.certifications || [],
         baseSalary: response.data.salary?.baseSalary || 0,
         hra: response.data.salary?.hra || 0,
         conveyance: response.data.salary?.conveyance || 0,
@@ -148,7 +168,7 @@ const TabbedProfile = () => {
           ...prev,
           profilePicture: reader.result
         }));
-        setMessage('');
+        setMessage('Profile picture selected. Click "Save" in Personal Info tab to update.');
       };
       reader.onerror = () => {
         setMessage('Error reading image file');
@@ -210,9 +230,40 @@ const TabbedProfile = () => {
         if (isAdminOrHR && formData.role) {
           updateData.role = formData.role;
         }
+
+        // Add new profile sections
+        updateData.profile.about = formData.about || '';
+        updateData.profile.whatILoveAboutMyJob = formData.whatILoveAboutMyJob || '';
+        updateData.profile.interestsAndHobbies = formData.interestsAndHobbies || '';
+        updateData.profile.skills = formData.skills || [];
+        updateData.profile.certifications = formData.certifications || [];
+        
+        // Add bank details
+        updateData.profile.bankDetails = {
+          accountNumber: formData.accountNumber || '',
+          bankName: formData.bankName || '',
+          ifscCode: formData.ifscCode || '',
+          panNumber: formData.panNumber || '',
+          uanNumber: formData.uanNumber || '',
+          empCode: formData.empCode || ''
+        };
+      }
+      
+      // Handle Security tab (bank details) separately
+      if (activeTab === 'security') {
+        updateData.profile = updateData.profile || {};
+        updateData.profile.bankDetails = {
+          accountNumber: formData.accountNumber || '',
+          bankName: formData.bankName || '',
+          ifscCode: formData.ifscCode || '',
+          panNumber: formData.panNumber || '',
+          uanNumber: formData.uanNumber || '',
+          empCode: formData.empCode || ''
+        };
       }
 
       if (isAdmin && activeTab === 'salary') {
+        // Only Admin can update salary
         updateData.salary = {
           baseSalary: parseFloat(formData.baseSalary),
           hra: parseFloat(formData.hra),
@@ -263,6 +314,17 @@ const TabbedProfile = () => {
         employeeId: updatedProfileResponse.data.employeeId || '',
         role: updatedProfileResponse.data.role || '',
         profilePicture: updatedProfileResponse.data.profile?.profilePicture || '',
+        about: updatedProfileResponse.data.profile?.about || '',
+        whatILoveAboutMyJob: updatedProfileResponse.data.profile?.whatILoveAboutMyJob || '',
+        interestsAndHobbies: updatedProfileResponse.data.profile?.interestsAndHobbies || '',
+        skills: updatedProfileResponse.data.profile?.skills || [],
+        certifications: updatedProfileResponse.data.profile?.certifications || [],
+        accountNumber: updatedProfileResponse.data.profile?.bankDetails?.accountNumber || '',
+        bankName: updatedProfileResponse.data.profile?.bankDetails?.bankName || '',
+        ifscCode: updatedProfileResponse.data.profile?.bankDetails?.ifscCode || '',
+        panNumber: updatedProfileResponse.data.profile?.bankDetails?.panNumber || '',
+        uanNumber: updatedProfileResponse.data.profile?.bankDetails?.uanNumber || '',
+        empCode: updatedProfileResponse.data.profile?.bankDetails?.empCode || '',
         baseSalary: updatedProfileResponse.data.salary?.baseSalary || 0,
         hra: updatedProfileResponse.data.salary?.hra || 0,
         conveyance: updatedProfileResponse.data.salary?.conveyance || 0,
@@ -318,13 +380,38 @@ const TabbedProfile = () => {
     <Layout>
       <div className="tabbed-profile">
         <div className="profile-header-section">
-          <div className="profile-avatar-large">
-            {profile?.profile?.profilePicture ? (
-              <img src={profile.profile.profilePicture} alt="Profile" />
-            ) : (
-              <div className="avatar-large">
-                {profile?.profile?.firstName?.[0] || profile?.email?.[0]}
-              </div>
+          <div className="profile-avatar-large-wrapper">
+            <div className="profile-avatar-large">
+              {(formData.profilePicture || profile?.profile?.profilePicture) ? (
+                <img src={formData.profilePicture || profile.profile.profilePicture} alt="Profile" />
+              ) : (
+                <div className="avatar-large">
+                  {profile?.profile?.firstName?.[0] || profile?.email?.[0] || 'U'}
+                </div>
+              )}
+            </div>
+            {canEdit && (
+              <>
+                <input
+                  type="file"
+                  id="header-profile-picture-input"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  className="profile-picture-edit-btn"
+                  onClick={() => document.getElementById('header-profile-picture-input').click()}
+                  title="Change profile picture"
+                  aria-label="Change profile picture"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </>
             )}
           </div>
           <div className="profile-header-info">
@@ -392,6 +479,12 @@ const TabbedProfile = () => {
             >
               Documents
             </button>
+            <button
+              className={activeTab === 'security' ? 'active' : ''}
+              onClick={() => setActiveTab('security')}
+            >
+              Security
+            </button>
           </div>
         </div>
 
@@ -401,7 +494,7 @@ const TabbedProfile = () => {
           {activeTab === 'personal' && (
             <div className="tab-panel">
               {editing && canEdit ? (
-                <form onSubmit={handleSubmit}>
+                <form id="profile-form" onSubmit={handleSubmit}>
                   <div className="profile-picture-edit-section">
                     <div className="current-picture-wrapper">
                       <div className="current-picture">
@@ -550,8 +643,13 @@ const TabbedProfile = () => {
                     )}
                   </div>
                   <div className="form-actions">
-                    <button type="submit" className="btn-primary">Save</button>
-                    <button type="button" onClick={() => setEditing(false)} className="btn-secondary">Cancel</button>
+                    <button type="button" onClick={() => setEditing(false)} className="btn btn-secondary">
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      <span>💾</span>
+                      Save Changes
+                    </button>
                   </div>
                 </form>
               ) : (
@@ -616,13 +714,309 @@ const TabbedProfile = () => {
                       </div>
                     )}
                   </div>
-                  {canEdit && (
+
+                  {/* About Section */}
+                  <div className="profile-section">
+                    <div className="section-header">
+                      <h3>About</h3>
+                      {canEdit && !editing && (
+                        <button 
+                          onClick={() => setEditing(true)} 
+                          className="edit-icon-btn"
+                          title="Edit About"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    {editing && canEdit ? (
+                      <textarea 
+                        name="about" 
+                        value={formData.about || ''} 
+                        onChange={handleChange} 
+                        placeholder="Tell us about yourself..."
+                        rows="4"
+                        className="profile-textarea"
+                      />
+                    ) : (
+                      <p className="profile-text-content">
+                        {profile?.profile?.about || 'No information provided'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* What I Love About My Job Section */}
+                  <div className="profile-section">
+                    <div className="section-header">
+                      <h3>What I Love About My Job</h3>
+                      {canEdit && !editing && (
+                        <button 
+                          onClick={() => setEditing(true)} 
+                          className="edit-icon-btn"
+                          title="Edit"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    {editing && canEdit ? (
+                      <textarea 
+                        name="whatILoveAboutMyJob" 
+                        value={formData.whatILoveAboutMyJob || ''} 
+                        onChange={handleChange} 
+                        placeholder="What do you love about your job?"
+                        rows="4"
+                        className="profile-textarea"
+                      />
+                    ) : (
+                      <p className="profile-text-content">
+                        {profile?.profile?.whatILoveAboutMyJob || 'No information provided'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Interests and Hobbies Section */}
+                  <div className="profile-section">
+                    <div className="section-header">
+                      <h3>My Interests and Hobbies</h3>
+                      {canEdit && !editing && (
+                        <button 
+                          onClick={() => setEditing(true)} 
+                          className="edit-icon-btn"
+                          title="Edit"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    {editing && canEdit ? (
+                      <textarea 
+                        name="interestsAndHobbies" 
+                        value={formData.interestsAndHobbies || ''} 
+                        onChange={handleChange} 
+                        placeholder="Share your interests and hobbies..."
+                        rows="4"
+                        className="profile-textarea"
+                      />
+                    ) : (
+                      <p className="profile-text-content">
+                        {profile?.profile?.interestsAndHobbies || 'No information provided'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Skills Section */}
+                  <div className="profile-section">
+                    <div className="section-header">
+                      <h3>Skills</h3>
+                      {canEdit && editing && (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const newSkills = [...(formData.skills || []), { name: '', level: 'Intermediate' }];
+                            setFormData({ ...formData, skills: newSkills });
+                          }}
+                          className="add-item-btn"
+                        >
+                          + Add Skill
+                        </button>
+                      )}
+                    </div>
+                    {editing && canEdit ? (
+                      <div className="skills-list">
+                        {(formData.skills || []).map((skill, index) => (
+                          <div key={index} className="skill-item-edit">
+                            <input
+                              type="text"
+                              placeholder="Skill name"
+                              value={skill.name || ''}
+                              onChange={(e) => {
+                                const newSkills = [...(formData.skills || [])];
+                                newSkills[index].name = e.target.value;
+                                setFormData({ ...formData, skills: newSkills });
+                              }}
+                              className="skill-input"
+                            />
+                            <select
+                              value={skill.level || 'Intermediate'}
+                              onChange={(e) => {
+                                const newSkills = [...(formData.skills || [])];
+                                newSkills[index].level = e.target.value;
+                                setFormData({ ...formData, skills: newSkills });
+                              }}
+                              className="skill-level-select"
+                            >
+                              <option value="Beginner">Beginner</option>
+                              <option value="Intermediate">Intermediate</option>
+                              <option value="Advanced">Advanced</option>
+                              <option value="Expert">Expert</option>
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSkills = (formData.skills || []).filter((_, i) => i !== index);
+                                setFormData({ ...formData, skills: newSkills });
+                              }}
+                              className="remove-item-btn"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {(formData.skills || []).length === 0 && (
+                          <p className="empty-state">No skills added. Click "+ Add Skill" to add one.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="skills-list">
+                        {(profile?.profile?.skills || []).length > 0 ? (
+                          profile.profile.skills.map((skill, index) => (
+                            <div key={index} className="skill-badge">
+                              <span className="skill-name">{skill.name}</span>
+                              <span className="skill-level">{skill.level}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="empty-state">No skills added</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Certifications Section */}
+                  <div className="profile-section">
+                    <div className="section-header">
+                      <h3>Certifications</h3>
+                      {canEdit && editing && (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const newCerts = [...(formData.certifications || []), { 
+                              name: '', 
+                              issuer: '', 
+                              issueDate: '', 
+                              expiryDate: '',
+                              credentialId: '',
+                              credentialUrl: ''
+                            }];
+                            setFormData({ ...formData, certifications: newCerts });
+                          }}
+                          className="add-item-btn"
+                        >
+                          + Add Certification
+                        </button>
+                      )}
+                    </div>
+                    {editing && canEdit ? (
+                      <div className="certifications-list">
+                        {(formData.certifications || []).map((cert, index) => (
+                          <div key={index} className="cert-item-edit">
+                            <input
+                              type="text"
+                              placeholder="Certification name"
+                              value={cert.name || ''}
+                              onChange={(e) => {
+                                const newCerts = [...(formData.certifications || [])];
+                                newCerts[index].name = e.target.value;
+                                setFormData({ ...formData, certifications: newCerts });
+                              }}
+                              className="cert-input"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Issuing organization"
+                              value={cert.issuer || ''}
+                              onChange={(e) => {
+                                const newCerts = [...(formData.certifications || [])];
+                                newCerts[index].issuer = e.target.value;
+                                setFormData({ ...formData, certifications: newCerts });
+                              }}
+                              className="cert-input"
+                            />
+                            <input
+                              type="date"
+                              placeholder="Issue date"
+                              value={cert.issueDate ? new Date(cert.issueDate).toISOString().split('T')[0] : ''}
+                              onChange={(e) => {
+                                const newCerts = [...(formData.certifications || [])];
+                                newCerts[index].issueDate = e.target.value;
+                                setFormData({ ...formData, certifications: newCerts });
+                              }}
+                              className="cert-input"
+                            />
+                            <input
+                              type="date"
+                              placeholder="Expiry date (optional)"
+                              value={cert.expiryDate ? new Date(cert.expiryDate).toISOString().split('T')[0] : ''}
+                              onChange={(e) => {
+                                const newCerts = [...(formData.certifications || [])];
+                                newCerts[index].expiryDate = e.target.value;
+                                setFormData({ ...formData, certifications: newCerts });
+                              }}
+                              className="cert-input"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newCerts = (formData.certifications || []).filter((_, i) => i !== index);
+                                setFormData({ ...formData, certifications: newCerts });
+                              }}
+                              className="remove-item-btn"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {(formData.certifications || []).length === 0 && (
+                          <p className="empty-state">No certifications added. Click "+ Add Certification" to add one.</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="certifications-list">
+                        {(profile?.profile?.certifications || []).length > 0 ? (
+                          profile.profile.certifications.map((cert, index) => (
+                            <div key={index} className="cert-item">
+                              <div className="cert-header">
+                                <h4>{cert.name}</h4>
+                                {cert.credentialId && <span className="credential-id">ID: {cert.credentialId}</span>}
+                              </div>
+                              <p className="cert-issuer">{cert.issuer}</p>
+                              <div className="cert-dates">
+                                {cert.issueDate && (
+                                  <span>Issued: {new Date(cert.issueDate).toLocaleDateString()}</span>
+                                )}
+                                {cert.expiryDate && (
+                                  <span>Expires: {new Date(cert.expiryDate).toLocaleDateString()}</span>
+                                )}
+                              </div>
+                              {cert.credentialUrl && (
+                                <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="cert-link">
+                                  View Credential
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="empty-state">No certifications added</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {canEdit && !editing && (
                     <div className="action-buttons">
                       <button onClick={() => setEditing(true)} className="btn-primary">Edit</button>
                       {isAdminOrHR && (
-                        <>
-                          <button className="btn-secondary">Print</button>
-                        </>
+                        <button className="btn-secondary">Print</button>
                       )}
                     </div>
                   )}
@@ -631,9 +1025,50 @@ const TabbedProfile = () => {
             </div>
           )}
 
-          {activeTab === 'salary' && isAdmin && (
+          {activeTab === 'salary' && isAdminOrHR && (
             <div className="tab-panel">
-              {editing ? (
+              {/* Salary Status Indicator */}
+              <div className="salary-status-section">
+                <div className="salary-status-header">
+                  <h3>Salary Status</h3>
+                  <span className={`salary-status-badge ${
+                    !profile?.salary?.baseSalary || profile?.salary?.baseSalary === 0 
+                      ? 'status-not-configured' 
+                      : profile?.salary?.netSalary > 0 
+                        ? 'status-active' 
+                        : 'status-pending'
+                  }`}>
+                    {!profile?.salary?.baseSalary || profile?.salary?.baseSalary === 0 
+                      ? 'Not Configured' 
+                      : profile?.salary?.netSalary > 0 
+                        ? 'Active' 
+                        : 'Pending'}
+                  </span>
+                </div>
+                <div className="salary-status-details">
+                  <div className="status-detail-item">
+                    <span className="status-label">Base Salary:</span>
+                    <span className="status-value">{formatCurrency(profile?.salary?.baseSalary || 0)}</span>
+                  </div>
+                  <div className="status-detail-item">
+                    <span className="status-label">Net Salary:</span>
+                    <span className="status-value">{formatCurrency(profile?.salary?.netSalary || 0)}</span>
+                  </div>
+                  <div className="status-detail-item">
+                    <span className="status-label">Last Updated:</span>
+                    <span className="status-value">
+                      {profile?.updatedAt 
+                        ? new Date(profile.updatedAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })
+                        : 'Never'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {editing && isAdmin ? (
                 <form onSubmit={handleSubmit}>
                   <h3>Salary Components</h3>
                   <div className="form-grid">
@@ -686,59 +1121,61 @@ const TabbedProfile = () => {
                       <h3>Earnings</h3>
                       <div className="salary-item">
                         <span>Basic Salary</span>
-                        <span>${profile?.salary?.baseSalary?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.baseSalary || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>HRA</span>
-                        <span>${profile?.salary?.hra?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.hra || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>Conveyance Allowance</span>
-                        <span>${profile?.salary?.conveyance?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.conveyance || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>Medical Allowance</span>
-                        <span>${profile?.salary?.medical?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.medical || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>Special Allowance</span>
-                        <span>${profile?.salary?.specialAllowance?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.specialAllowance || 0)}</span>
                       </div>
                       <div className="salary-total">
                         <span>Gross Salary</span>
-                        <span>${((profile?.salary?.baseSalary || 0) + (profile?.salary?.allowances || 0)).toLocaleString()}</span>
+                        <span className="salary-amount">{formatCurrency((profile?.salary?.baseSalary || 0) + (profile?.salary?.allowances || 0))}</span>
                       </div>
                     </div>
                     <div className="salary-section">
                       <h3>Deductions</h3>
                       <div className="salary-item">
                         <span>PF</span>
-                        <span>${profile?.salary?.pf?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.pf || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>ESI</span>
-                        <span>${profile?.salary?.esi?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.esi || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>Professional Tax</span>
-                        <span>${profile?.salary?.professionalTax?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.professionalTax || 0)}</span>
                       </div>
                       <div className="salary-item">
                         <span>Income Tax</span>
-                        <span>${profile?.salary?.incomeTax?.toLocaleString() || '0'}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.incomeTax || 0)}</span>
                       </div>
                       <div className="salary-total deductions">
                         <span>Total Deductions</span>
-                        <span>${(profile?.salary?.deductions || 0).toLocaleString()}</span>
+                        <span className="salary-amount">{formatCurrency(profile?.salary?.deductions || 0)}</span>
                       </div>
                     </div>
                   </div>
                   <div className="net-salary-display">
                     <span>Net Salary</span>
-                    <span>${(profile?.salary?.netSalary || 0).toLocaleString()}</span>
+                    <span className="net-salary-amount">{formatCurrency(profile?.salary?.netSalary || 0)}</span>
                   </div>
                   <div className="action-buttons">
-                    <button onClick={() => setEditing(true)} className="btn-primary">Edit</button>
+                    {isAdmin && (
+                      <button onClick={() => setEditing(true)} className="btn-primary">Edit</button>
+                    )}
                     <button className="btn-secondary">Print</button>
                   </div>
                 </div>
@@ -826,6 +1263,127 @@ const TabbedProfile = () => {
                   <button className="btn-primary">Upload Document</button>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'security' && (
+            <div className="tab-panel">
+              {editing && canEdit ? (
+                <form id="security-form" onSubmit={handleSubmit}>
+                  <div className="bank-details-section">
+                    <h2>Bank Details</h2>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Account Number</label>
+                        <input 
+                          type="text" 
+                          name="accountNumber" 
+                          value={formData.accountNumber || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter account number"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Bank Name</label>
+                        <input 
+                          type="text" 
+                          name="bankName" 
+                          value={formData.bankName || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter bank name"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>IFSC Code</label>
+                        <input 
+                          type="text" 
+                          name="ifscCode" 
+                          value={formData.ifscCode || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter IFSC code"
+                          style={{ textTransform: 'uppercase' }}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>PAN Number</label>
+                        <input 
+                          type="text" 
+                          name="panNumber" 
+                          value={formData.panNumber || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter PAN number"
+                          style={{ textTransform: 'uppercase' }}
+                          maxLength="10"
+                        />
+                        <small className="form-hint">Format: ABCDE1234F</small>
+                      </div>
+                      <div className="form-group">
+                        <label>UAN Number</label>
+                        <input 
+                          type="text" 
+                          name="uanNumber" 
+                          value={formData.uanNumber || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter UAN number"
+                          maxLength="12"
+                        />
+                        <small className="form-hint">Universal Account Number (12 digits)</small>
+                      </div>
+                      <div className="form-group">
+                        <label>Employee Code</label>
+                        <input 
+                          type="text" 
+                          name="empCode" 
+                          value={formData.empCode || ''} 
+                          onChange={handleChange}
+                          placeholder="Enter employee code"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn-primary">Save Bank Details</button>
+                      <button type="button" onClick={() => setEditing(false)} className="btn-secondary">Cancel</button>
+                    </div>
+                  </div>
+                </form>
+              ) : (
+                <div className="info-display">
+                  <div className="bank-details-section">
+                    <div className="section-header">
+                      <h2>Bank Details</h2>
+                      {canEdit && (
+                        <button onClick={() => setEditing(true)} className="btn-primary">Edit</button>
+                      )}
+                    </div>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <label>Account Number</label>
+                        <p>{profile?.profile?.bankDetails?.accountNumber || 'Not provided'}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>Bank Name</label>
+                        <p>{profile?.profile?.bankDetails?.bankName || 'Not provided'}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>IFSC Code</label>
+                        <p>{profile?.profile?.bankDetails?.ifscCode || 'Not provided'}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>PAN Number</label>
+                        <p>{profile?.profile?.bankDetails?.panNumber || 'Not provided'}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>UAN Number</label>
+                        <p>{profile?.profile?.bankDetails?.uanNumber || 'Not provided'}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>Employee Code</label>
+                        <p>{profile?.profile?.bankDetails?.empCode || 'Not provided'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

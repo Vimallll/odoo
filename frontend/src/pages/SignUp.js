@@ -45,18 +45,13 @@ const SignUp = () => {
 
       console.log('✅ Signup successful:', response.data);
       
-      // Show success message
-      setSuccess('Account created successfully! Redirecting to login...');
-      
-      // Redirect to signin page after 2 seconds with email pre-filled
-      setTimeout(() => {
-        navigate('/signin', { 
-          state: { 
-            email: formData.email,
-            message: 'Account created successfully! Please login to continue.'
-          } 
-        });
-      }, 2000);
+      // Redirect to OTP verification page
+      navigate('/verify-email-otp', {
+        state: {
+          userId: response.data.userId,
+          email: response.data.email
+        }
+      });
       
     } catch (err) {
       console.error('❌ Signup error:', err);
@@ -72,8 +67,11 @@ const SignUp = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Dayflow</h1>
-          <p>Every workday, perfectly aligned.</p>
+          <div className="auth-logo">
+            <div className="auth-logo-icon">🌊</div>
+            <h1>Emporia</h1>
+          </div>
+          <p className="tagline">Every workday, perfectly aligned.</p>
           <h2>Create Account</h2>
         </div>
 
@@ -88,17 +86,19 @@ const SignUp = () => {
               name="employeeId"
               value={formData.employeeId}
               onChange={handleChange}
+              placeholder="Enter your employee ID"
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label>Email Address</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="name@company.com"
               required
             />
           </div>
@@ -110,9 +110,12 @@ const SignUp = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              placeholder="Min 8 characters with uppercase, lowercase, number & special char"
               required
-              placeholder="Min 8 chars, uppercase, lowercase, number, special char"
             />
+            <small style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--text-xs)', marginTop: 'var(--spacing-1)' }}>
+              Must contain uppercase, lowercase, number, and special character
+            </small>
           </div>
 
           <div className="form-group">
@@ -122,6 +125,7 @@ const SignUp = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
+              placeholder="Re-enter your password"
               required
             />
           </div>
@@ -135,7 +139,17 @@ const SignUp = () => {
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? (
+              <>
+                <span>⏳</span>
+                Creating Account...
+              </>
+            ) : (
+              <>
+                <span>✨</span>
+                Create Account
+              </>
+            )}
           </button>
         </form>
 

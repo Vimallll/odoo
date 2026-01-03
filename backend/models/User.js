@@ -32,6 +32,24 @@ const userSchema = new mongoose.Schema({
   emailVerificationToken: {
     type: String
   },
+  emailVerificationOTP: {
+    type: String
+  },
+  emailVerificationOTPExpires: {
+    type: Date
+  },
+  passwordResetToken: {
+    type: String
+  },
+  passwordResetExpires: {
+    type: Date
+  },
+  passwordResetOTP: {
+    type: String
+  },
+  passwordResetOTPExpires: {
+    type: Date
+  },
   profile: {
     firstName: { type: String, default: '' },
     lastName: { type: String, default: '' },
@@ -45,6 +63,29 @@ const userSchema = new mongoose.Schema({
     department: { type: String, default: '' },
     position: { type: String, default: '' },
     joiningDate: { type: Date },
+    about: { type: String, default: '' },
+    whatILoveAboutMyJob: { type: String, default: '' },
+    interestsAndHobbies: { type: String, default: '' },
+    skills: [{ 
+      name: String,
+      level: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'], default: 'Intermediate' }
+    }],
+    certifications: [{ 
+      name: String,
+      issuer: String,
+      issueDate: Date,
+      expiryDate: Date,
+      credentialId: String,
+      credentialUrl: String
+    }],
+    bankDetails: {
+      accountNumber: { type: String, default: '' },
+      bankName: { type: String, default: '' },
+      ifscCode: { type: String, default: '' },
+      panNumber: { type: String, default: '' },
+      uanNumber: { type: String, default: '' },
+      empCode: { type: String, default: '' }
+    },
     documents: [{ 
       name: String, 
       url: String, 
@@ -64,7 +105,7 @@ const userSchema = new mongoose.Schema({
     incomeTax: { type: Number, default: 0 },
     deductions: { type: Number, default: 0 },
     netSalary: { type: Number, default: 0 },
-    currency: { type: String, default: 'USD' }
+    currency: { type: String, default: 'INR' }
   },
   isActive: {
     type: Boolean,

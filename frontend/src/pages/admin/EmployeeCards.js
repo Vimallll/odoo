@@ -15,6 +15,14 @@ const EmployeeCards = () => {
     status: 'Active'
   });
   const [sortBy, setSortBy] = useState('name-asc');
+  const [showJobDetailsModal, setShowJobDetailsModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [jobDetailsForm, setJobDetailsForm] = useState({
+    department: '',
+    position: '',
+    joiningDate: ''
+  });
+  const [message, setMessage] = useState('');
 
   const navigate = useNavigate();
 
@@ -29,6 +37,8 @@ const EmployeeCards = () => {
   const fetchEmployees = async () => {
     try {
       const response = await api.get('/employees');
+      console.log('📥 Fetched employees:', response.data.length);
+      console.log('📧 Sample employee email:', response.data[0]?.email);
       setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
@@ -103,6 +113,68 @@ const EmployeeCards = () => {
 
   const handleViewEmployee = (employeeId) => {
     navigate(`/admin/employees/${employeeId}`);
+  };
+
+  const handleOpenJobDetails = (employee) => {
+    setSelectedEmployee(employee);
+    setJobDetailsForm({
+      department: employee.profile?.department || '',
+      position: employee.profile?.position || '',
+      joiningDate: employee.profile?.joiningDate 
+        ? new Date(employee.profile.joiningDate).toISOString().split('T')[0] 
+        : ''
+    });
+    setShowJobDetailsModal(true);
+    setMessage('');
+  };
+
+  const handleCloseJobDetails = () => {
+    setShowJobDetailsModal(false);
+    setSelectedEmployee(null);
+    setJobDetailsForm({
+      department: '',
+      position: '',
+      joiningDate: ''
+    });
+    setMessage('');
+  };
+
+  const handleJobDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setJobDetailsForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaveJobDetails = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    
+    try {
+      const updateData = {
+        profile: {
+          department: jobDetailsForm.department || '',
+          position: jobDetailsForm.position || '',
+          joiningDate: jobDetailsForm.joiningDate || null
+        }
+      };
+
+      await api.put(`/employees/${selectedEmployee._id}`, updateData);
+      
+      setMessage('Job details updated successfully!');
+      
+      // Refresh employee list
+      await fetchEmployees();
+      
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        handleCloseJobDetails();
+      }, 1500);
+    } catch (error) {
+      console.error('Error updating job details:', error);
+      setMessage(error.response?.data?.error || 'Error updating job details. Please try again.');
+    }
   };
 
   if (loading) {
@@ -206,8 +278,18 @@ const EmployeeCards = () => {
                 <div className="card-body">
                   <h3>{employee.profile?.firstName || ''} {employee.profile?.lastName || ''}</h3>
                   <p className="employee-id">ID: {employee.employeeId}</p>
+                  <p className="employee-email">{employee.email || 'No email'}</p>
                   <p className="employee-dept">{employee.profile?.department || 'Not assigned'}</p>
                   <p className="employee-designation">{employee.profile?.position || 'Not assigned'}</p>
+                  {employee.profile?.joiningDate && (
+                    <p className="employee-joining-date">
+                      Joined: {new Date(employee.profile.joiningDate).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  )}
                 </div>
                 <div className="card-footer">
                   <button
@@ -215,6 +297,13 @@ const EmployeeCards = () => {
                     className="btn-view"
                   >
                     View
+                  </button>
+                  <button
+                    onClick={() => handleOpenJobDetails(employee)}
+                    className="btn-job-details"
+                    title="Edit Job Details"
+                  >
+                    Job Details
                   </button>
                   <button
                     onClick={() => navigate(`/admin/attendance?employeeId=${employee._id}`)}
@@ -231,6 +320,76 @@ const EmployeeCards = () => {
         <div className="results-count">
           Showing {filteredEmployees.length} of {employees.length} employees
         </div>
+
+        {/* Job Details Modal */}
+        {showJobDetailsModal && selectedEmployee && (
+          <div className="modal-overlay" onClick={handleCloseJobDetails}>
+            <div className="modal-content job-details-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Job Details - {selectedEmployee.profile?.firstName} {selectedEmployee.profile?.lastName}</h2>
+                <button className="modal-close" onClick={handleCloseJobDetails}>×</button>
+              </div>
+              <form onSubmit={handleSaveJobDetails}>
+                <div className="modal-body">
+                  {message && (
+                    <div className={`message ${message.includes('success') ? 'success' : 'error'}`}>
+                      {message}
+                    </div>
+                  )}
+                  <div className="form-group">
+                    <label>Department *</label>
+                    <input
+                      type="text"
+                      name="department"
+                      value={jobDetailsForm.department}
+                      onChange={handleJobDetailsChange}
+                      placeholder="Enter department"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Position/Designation *</label>
+                    <input
+                      type="text"
+                      name="position"
+                      value={jobDetailsForm.position}
+                      onChange={handleJobDetailsChange}
+                      placeholder="Enter position"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Date of Joining *</label>
+                    <input
+                      type="date"
+                      name="joiningDate"
+                      value={jobDetailsForm.joiningDate}
+                      onChange={handleJobDetailsChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Employee ID</label>
+                    <input
+                      type="text"
+                      value={selectedEmployee.employeeId || ''}
+                      disabled
+                      className="disabled-input"
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" onClick={handleCloseJobDetails} className="btn-cancel">
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-save">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

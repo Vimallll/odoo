@@ -194,13 +194,14 @@ const Employees = () => {
                 <th>Email</th>
                 <th>Department</th>
                 <th>Position</th>
+                <th>Date of Joining</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="no-data">No employees found</td>
+                  <td colSpan="7" className="no-data">No employees found</td>
                 </tr>
               ) : (
                 employees.map((employee) => (
@@ -212,6 +213,15 @@ const Employees = () => {
                     <td>{employee.email}</td>
                     <td>{employee.profile?.department || '-'}</td>
                     <td>{employee.profile?.position || '-'}</td>
+                    <td>
+                      {employee.profile?.joiningDate 
+                        ? new Date(employee.profile.joiningDate).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })
+                        : '-'}
+                    </td>
                     <td>
                       <button
                         onClick={() => handleEdit(employee)}

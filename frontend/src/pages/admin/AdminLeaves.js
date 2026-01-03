@@ -121,6 +121,7 @@ const AdminLeaves = () => {
                     <h3>
                       {leave.employeeId?.profile?.firstName} {leave.employeeId?.profile?.lastName}
                     </h3>
+                    <p className="employee-id-display">Employee ID: {leave.employeeId?.employeeId || 'N/A'}</p>
                     <p>{leave.leaveType} Leave</p>
                     <p>
                       {new Date(leave.startDate).toLocaleDateString()} -{' '}

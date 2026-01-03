@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import Layout from '../components/Layout';
+import KPICard from '../components/KPICard';
+import { KPICardSkeleton } from '../components/LoadingSkeleton';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [attendanceStatus, setAttendanceStatus] = useState(null);
 
   useEffect(() => {
     fetchStats();
+    fetchTodayAttendance();
   }, []);
 
   const fetchStats = async () => {
@@ -23,59 +27,183 @@ const Dashboard = () => {
     }
   };
 
+  const fetchTodayAttendance = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await api.get(`/attendance?startDate=${today}&endDate=${today}`);
+      if (response.data.length > 0) {
+        setAttendanceStatus(response.data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+    }
+  };
+
+  const getAttendanceStatus = () => {
+    if (!attendanceStatus) return 'Not Checked In';
+    if (attendanceStatus.checkIn && !attendanceStatus.checkOut) return 'Checked In';
+    if (attendanceStatus.checkIn && attendanceStatus.checkOut) return 'Checked Out';
+    return 'Absent';
+  };
+
+  const getLeaveBalance = () => {
+    // This would come from the API
+    return stats?.leaveBalance || { paid: 10, sick: 5, unpaid: 0 };
+  };
+
   if (loading) {
     return (
       <Layout>
-        <div className="loading">Loading...</div>
+        <div className="dashboard">
+          <div className="dashboard-header">
+            <div>
+              <h1>Dashboard</h1>
+              <p className="subtitle">Welcome back! Here's your overview.</p>
+            </div>
+          </div>
+          <div className="kpi-grid">
+            {[...Array(4)].map((_, i) => (
+              <KPICardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </Layout>
     );
   }
 
+  const leaveBalance = getLeaveBalance();
+
   return (
     <Layout>
       <div className="dashboard">
-        <h1>Employee Dashboard</h1>
-        <p className="subtitle">Welcome back! Here's your overview.</p>
-
-        <div className="dashboard-cards">
-          <Link to="/profile" className="card">
-            <div className="card-icon">👤</div>
-            <h3>Profile</h3>
-            <p>View and edit your profile</p>
-          </Link>
-
-          <Link to="/attendance" className="card">
-            <div className="card-icon">⏱</div>
-            <h3>Attendance</h3>
-            <p>Check in/out and view records</p>
-          </Link>
-
-          <Link to="/leaves" className="card">
-            <div className="card-icon">🏖</div>
-            <h3>Leave Requests</h3>
-            <p>Apply and track your leaves</p>
-          </Link>
-
-          <Link to="/payroll" className="card">
-            <div className="card-icon">💰</div>
-            <h3>Payroll</h3>
-            <p>View salary and payslips</p>
-          </Link>
+        <div className="dashboard-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p className="subtitle">Welcome back! Here's your overview.</p>
+          </div>
         </div>
 
+        {/* KPI Cards */}
+        <div className="kpi-grid">
+          <KPICard
+            title="Attendance Status"
+            value={getAttendanceStatus()}
+            icon="⏰"
+            color="primary"
+          />
+          <KPICard
+            title="Paid Leave Balance"
+            value={leaveBalance.paid}
+            change="days remaining"
+            icon="🏖️"
+            color="success"
+          />
+          <KPICard
+            title="Sick Leave Balance"
+            value={leaveBalance.sick}
+            change="days remaining"
+            icon="🏥"
+            color="warning"
+          />
+          <KPICard
+            title="Pending Leaves"
+            value={stats?.pendingLeaves || 0}
+            icon="📋"
+            color="info"
+          />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="quick-actions-section">
+          <h2 className="section-title">Quick Actions</h2>
+          <div className="quick-actions-grid">
+            <Link to="/profile" className="action-card">
+              <div className="action-icon">👤</div>
+              <div className="action-content">
+                <h3>My Profile</h3>
+                <p>View and edit your profile information</p>
+              </div>
+              <div className="action-arrow">→</div>
+            </Link>
+
+            <Link to="/attendance" className="action-card">
+              <div className="action-icon">⏰</div>
+              <div className="action-content">
+                <h3>Attendance</h3>
+                <p>Check in/out and view attendance records</p>
+              </div>
+              <div className="action-arrow">→</div>
+            </Link>
+
+            <Link to="/leaves" className="action-card">
+              <div className="action-icon">🏖️</div>
+              <div className="action-content">
+                <h3>Leave Requests</h3>
+                <p>Apply for leave and track your requests</p>
+              </div>
+              <div className="action-arrow">→</div>
+            </Link>
+
+            <Link to="/payroll" className="action-card">
+              <div className="action-icon">💰</div>
+              <div className="action-content">
+                <h3>Payroll</h3>
+                <p>View salary details and download payslips</p>
+              </div>
+              <div className="action-arrow">→</div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Activity Timeline */}
         {stats?.recentLeaves && stats.recentLeaves.length > 0 && (
-          <div className="recent-activity">
-            <h2>Recent Leave Requests</h2>
-            <div className="activity-list">
-              {stats.recentLeaves.map((leave) => (
-                <div key={leave._id} className="activity-item">
-                  <div className="activity-info">
-                    <strong>{leave.leaveType} Leave</strong>
-                    <span>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</span>
+          <div className="activity-section">
+            <h2 className="section-title">Recent Activity</h2>
+            <div className="activity-timeline">
+              {stats.recentLeaves.slice(0, 5).map((leave, index) => (
+                <div key={leave._id} className="timeline-item">
+                  <div className="timeline-marker">
+                    <div className={`marker-dot marker-${leave.status.toLowerCase()}`}></div>
+                    {index < stats.recentLeaves.length - 1 && <div className="timeline-line"></div>}
                   </div>
-                  <span className={`status-badge status-${leave.status.toLowerCase()}`}>
-                    {leave.status}
-                  </span>
+                  <div className="timeline-content">
+                    <div className="timeline-header">
+                      <h4>{leave.leaveType} Leave Request</h4>
+                      <span className={`badge badge-${leave.status.toLowerCase()}`}>
+                        {leave.status}
+                      </span>
+                    </div>
+                    <p className="timeline-date">
+                      {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                    </p>
+                    {leave.remarks && (
+                      <p className="timeline-remarks">{leave.remarks}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming Leaves */}
+        {stats?.upcomingLeaves && stats.upcomingLeaves.length > 0 && (
+          <div className="upcoming-section">
+            <h2 className="section-title">Upcoming Leaves</h2>
+            <div className="upcoming-cards">
+              {stats.upcomingLeaves.map((leave) => (
+                <div key={leave._id} className="upcoming-card">
+                  <div className="upcoming-date">
+                    <div className="date-day">{new Date(leave.startDate).getDate()}</div>
+                    <div className="date-month">{new Date(leave.startDate).toLocaleDateString('en-US', { month: 'short' })}</div>
+                  </div>
+                  <div className="upcoming-info">
+                    <h4>{leave.leaveType}</h4>
+                    <p>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</p>
+                    <span className={`badge badge-${leave.status.toLowerCase()}`}>
+                      {leave.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -87,4 +215,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

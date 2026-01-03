@@ -1,16 +1,23 @@
 .tabbed-profile {
-  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .profile-header-section {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  background: var(--color-white);
+  padding: var(--spacing-8);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-6);
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: var(--spacing-8);
+}
+
+.profile-avatar-large-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .profile-avatar-large {
@@ -18,8 +25,14 @@
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid #667eea;
-  flex-shrink: 0;
+  border: 4px solid var(--color-primary-200);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.profile-avatar-large-wrapper:hover .profile-avatar-large {
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-lg);
 }
 
 .profile-avatar-large img {
@@ -31,23 +44,59 @@
 .avatar-large {
   width: 100%;
   height: 100%;
-  background: #667eea;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-teal-500));
+  color: var(--color-white);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
+}
+
+.profile-picture-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary-600);
+  color: var(--color-white);
+  border: 3px solid var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  z-index: 10;
+}
+
+.profile-picture-edit-btn:hover {
+  background: var(--color-primary-700);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.profile-picture-edit-btn:active {
+  transform: scale(0.95);
+}
+
+.profile-picture-edit-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
 }
 
 .profile-header-info h1 {
-  margin: 0 0 10px 0;
-  color: #333;
-  font-size: 32px;
+  margin: 0 0 var(--spacing-2) 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
 }
 
 .employee-id-display {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 16px;
   margin: 0 0 5px 0;
 }
@@ -99,39 +148,43 @@
 }
 
 .tabs-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-6);
   overflow: hidden;
 }
 
 .tabs {
   display: flex;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
 }
 
 .tabs button {
-  padding: 15px 25px;
+  padding: var(--spacing-4) var(--spacing-6);
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
   border-bottom: 3px solid transparent;
-  transition: all 0.3s;
+  transition: all var(--transition-base);
+  white-space: nowrap;
 }
 
 .tabs button:hover {
-  color: #667eea;
-  background: #f8f9fa;
+  color: var(--color-primary-600);
+  background: var(--color-gray-50);
 }
 
 .tabs button.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-  background: #f8f9fa;
+  color: var(--color-primary-700);
+  border-bottom-color: var(--color-primary-600);
+  background: var(--color-primary-50);
+  font-weight: var(--weight-semibold);
 }
 
 .tab-content {
@@ -188,8 +241,12 @@
 
 .form-actions {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .info-display {
@@ -231,59 +288,213 @@
 
 .salary-breakdown {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
   margin-bottom: 30px;
 }
 
 .salary-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8e8e8;
+  transition: box-shadow 0.3s ease;
+}
+
+.salary-section:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .salary-section h3 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 18px;
+  margin: 0 0 20px 0;
+  color: #1a1a1a;
+  font-size: 20px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .salary-item {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #e0e0e0;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.salary-item:hover {
+  background-color: #fafafa;
+  margin: 0 -5px;
+  padding: 12px 5px;
+  border-radius: 4px;
 }
 
 .salary-item:last-child {
   border-bottom: none;
 }
 
+.salary-item span:first-child {
+  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.salary-amount {
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.3px;
+}
+
 .salary-total {
   display: flex;
   justify-content: space-between;
-  padding: 15px 0;
-  margin-top: 10px;
-  border-top: 2px solid #333;
+  align-items: center;
+  padding: 18px 0;
+  margin-top: 15px;
+  border-top: 2px solid #2d3748;
   font-weight: 700;
   font-size: 18px;
+  background: linear-gradient(to right, transparent, #f7fafc, transparent);
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.salary-total span:first-child {
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 16px;
+}
+
+.salary-total .salary-amount {
+  color: #1a1a1a;
+  font-size: 20px;
 }
 
 .salary-total.deductions {
-  border-top-color: #dc3545;
-  color: #dc3545;
+  border-top-color: #e53e3e;
+  background: linear-gradient(to right, transparent, #fff5f5, transparent);
+}
+
+.salary-total.deductions span:first-child {
+  color: #c53030;
+}
+
+.salary-total.deductions .salary-amount {
+  color: #c53030;
 }
 
 .net-salary-display {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 25px 30px;
+  border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  margin-top: 20px;
+}
+
+.net-salary-display span:first-child {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 16px;
+  opacity: 0.95;
+}
+
+.net-salary-amount {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.salary-status-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  border: 1px solid #e8e8e8;
+}
+
+.salary-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.salary-status-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.salary-status-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.salary-status-badge.status-active {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.salary-status-badge.status-pending {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.salary-status-badge.status-not-configured {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.salary-status-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.status-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.status-label {
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-value {
+  color: #1a1a1a;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.3px;
 }
 
 .attendance-table,
@@ -443,8 +654,65 @@
 }
 
 .btn-secondary {
-  background: #6c757d;
-  color: white;
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-gray-50);
+  border-color: var(--color-gray-300);
+}
+
+/* Ensure form action buttons are visible */
+.form-actions {
+  display: flex !important;
+  gap: var(--spacing-4) !important;
+  margin-top: var(--spacing-6) !important;
+  padding-top: var(--spacing-6) !important;
+  border-top: 1px solid var(--color-border) !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap;
+}
+
+.form-actions .btn-primary {
+  background: var(--color-primary-600) !important;
+  color: var(--color-white) !important;
+  padding: var(--spacing-3) var(--spacing-6) !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--weight-semibold) !important;
+  cursor: pointer !important;
+  transition: all var(--transition-base) !important;
+  box-shadow: var(--shadow-sm) !important;
+  min-width: 140px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--spacing-2) !important;
+}
+
+.form-actions .btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-1px) !important;
+}
+
+.form-actions .btn-secondary {
+  background: var(--color-white) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  padding: var(--spacing-3) var(--spacing-6) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--weight-medium) !important;
+  cursor: pointer !important;
+  transition: all var(--transition-base) !important;
+  min-width: 140px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .btn-secondary:hover {
@@ -551,5 +819,322 @@
   background: #f5f5f5;
   cursor: not-allowed;
   color: #999;
+}
+
+/* Profile Sections (About, Interests, etc.) */
+.profile-section {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.edit-icon-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-icon-btn:hover {
+  background: #f0f0f0;
+  color: #5568d3;
+}
+
+.edit-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.profile-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.3s ease;
+}
+
+.profile-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.profile-text-content {
+  color: #555;
+  line-height: 1.8;
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+
+.profile-text-content:empty::before {
+  content: 'No information provided';
+  color: #999;
+  font-style: italic;
+}
+
+/* Skills Section */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-item-edit {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.skill-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.skill-level-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f0f4ff;
+  border: 1px solid #667eea;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.skill-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.skill-level {
+  font-size: 12px;
+  color: #667eea;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.remove-item-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-item-btn:hover {
+  background: #cc0000;
+  transform: scale(1.1);
+}
+
+.add-item-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.add-item-btn:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Certifications Section */
+.certifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.cert-item-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  position: relative;
+}
+
+.cert-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.cert-item-edit .remove-item-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.cert-item {
+  padding: 15px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.cert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cert-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.credential-id {
+  font-size: 12px;
+  color: #666;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.cert-issuer {
+  color: #667eea;
+  font-weight: 500;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.cert-dates {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #666;
+  margin: 8px 0;
+}
+
+.cert-link {
+  display: inline-block;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.cert-link:hover {
+  text-decoration: underline;
+}
+
+.empty-state {
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 2px dashed #e5e7eb;
+}
+
+/* Bank Details Section */
+.bank-details-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bank-details-section h2 {
+  margin: 0 0 25px 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.bank-details-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.bank-details-section .section-header h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.bank-details-section .form-group input {
+  text-transform: none;
+}
+
+.bank-details-section .form-group input[type="text"][name="ifscCode"],
+.bank-details-section .form-group input[type="text"][name="panNumber"] {
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
