@@ -61,7 +61,7 @@ exports.applyLeave = async (req, res) => {
 // Get leave requests
 exports.getLeaves = async (req, res) => {
   try {
-    const { employeeId, status } = req.query;
+    const { employeeId, status, startDate, endDate } = req.query;
     const query = {};
 
     // Employees can only view their own leaves
@@ -73,6 +73,22 @@ exports.getLeaves = async (req, res) => {
 
     if (status) {
       query.status = status;
+    }
+
+    // Filter by date range if provided
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      // Find leaves that overlap with the date range
+      query.$or = [
+        {
+          startDate: { $lte: end },
+          endDate: { $gte: start }
+        }
+      ];
     }
 
     const leaves = await Leave.find(query)

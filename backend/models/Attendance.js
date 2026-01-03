@@ -27,6 +27,14 @@ const attendanceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  overtime: {
+    type: Boolean,
+    default: false
+  },
+  overtimeHours: {
+    type: Number,
+    default: 0
+  },
   remarks: {
     type: String,
     default: ''
